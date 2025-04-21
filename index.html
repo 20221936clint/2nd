@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Use the correct script for reCAPTCHA v2 -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+
+    <div class="container" id="login-container">
+        <h2>Login</h2>
+        <form id="login-form">
+            <input type="email" id="login-email" placeholder="Email" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <!-- reCAPTCHA v2: Use the site key here -->
+            <div class="g-recaptcha" data-sitekey="6LdYpwErAAAAAFyKBhtjEyHCNGx4hg546YNSFDLI"></div>
+            <button type="submit">Login</button>
+        </form>
+        <p>Don't have an account? <a href="#" id="show-register">Register</a></p>
+    </div>
+
+    <div class="container" id="register-container" style="display: none;">
+        <h2>Register</h2>
+        <form id="register-form">
+            <input type="email" id="register-email" placeholder="Email" required>
+            <input type="password" id="register-password" placeholder="Password" required>
+            <!-- reCAPTCHA v2: Use the site key here -->
+            <div class="g-recaptcha" data-sitekey="6LdYpwErAAAAAFyKBhtjEyHCNGx4hg546YNSFDLI"></div>
+            <button type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a href="#" id="show-login">Login</a></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script> <!-- Load external script -->
+</body>
+</html>

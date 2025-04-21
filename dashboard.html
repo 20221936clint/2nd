@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Spot-it-fy</div>
+        <nav>
+            <ul>
+                <li><a href="user.html">User</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="whatsnew.html">What's New</a></li>
+            </ul>
+        </nav>
+        <div class="button">
+            <button class="back-button" onclick="window.location.href='dashboard.html'">Go Back to Dashboard</button>
+        </div>
+        <div class="nav">
+            <button id="logout-button">Logout</button>
+        </div>
+    </header>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+</html>
