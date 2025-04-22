@@ -1,40 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Login & Register</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Use the correct script for reCAPTCHA v2 -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <link rel="stylesheet" href="styles.css"/>
+    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoadCallback&render=explicit" async defer></script>
 </head>
 <body>
 
+    <!-- Login Form -->
     <div class="container" id="login-container">
         <h2>Login</h2>
         <form id="login-form">
-            <input type="email" id="login-email" placeholder="Email" required>
-            <input type="password" id="login-password" placeholder="Password" required>
-            <!-- reCAPTCHA v2: Use the site key here -->
-            <div class="g-recaptcha" data-sitekey="6LdYpwErAAAAAFyKBhtjEyHCNGx4hg546YNSFDLI"></div>
+            <input type="email" id="login-email" placeholder="Email" required />
+            <input type="password" id="login-password" placeholder="Password" required />
+            <div class="g-recaptcha" id="login-recaptcha"></div>
             <button type="submit">Login</button>
         </form>
         <p>Don't have an account? <a href="#" id="show-register">Register</a></p>
     </div>
 
+    <!-- Register Form -->
     <div class="container" id="register-container" style="display: none;">
         <h2>Register</h2>
         <form id="register-form">
-            <input type="email" id="register-email" placeholder="Email" required>
-            <input type="password" id="register-password" placeholder="Password" required>
-            <!-- reCAPTCHA v2: Use the site key here -->
-            <div class="g-recaptcha" data-sitekey="6LdYpwErAAAAAFyKBhtjEyHCNGx4hg546YNSFDLI"></div>
+            <input type="email" id="register-email" placeholder="Email" required />
+            <input type="password" id="register-password" placeholder="Password" required />
+            <div class="g-recaptcha" id="register-recaptcha"></div>
             <button type="submit">Register</button>
         </form>
         <p>Already have an account? <a href="#" id="show-login">Login</a></p>
     </div>
 
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script> <!-- Load external script -->
+
+    <!-- Script -->
+    <script>
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(
+            "https://uzddoatnwkdarsnnbnqs.supabase.co", 
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6ZGRvYXRud2tkYXJzbm5ibnFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUyOTk5NjYsImV4cCI6MjA2MDg3NTk2Nn0.8eikLanE7QrHTQmbu3j8cyrMRO3mytFqxnurFNpH-ms"
+        );
+
+        // Toggle between login and register
+        document.getElementById('show-register').addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('register-container').style.display = 'block';
+        });
+
+        document.getElementById('show-login').addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('register-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+        });
+
+        // Explicit reCAPTCHA render
+        let loginWidgetId, registerWidgetId;
+        function onRecaptchaLoadCallback() {
+            loginWidgetId = grecaptcha.render('login-recaptcha', {
+                sitekey: '6LdYpwErAAAAAFyKBhtjEyHCNGx4hg546YNSFDLI'
+            });
+            registerWidgetId = grecaptcha.render('register-recaptcha', {
+                sitekey: '6LdYpwErAAAAAFyKBhtjEyHCNGx4hg546YNSFDLI'
+            });
+        }
+
+        // Function to validate reCAPTCHA
+        function validateCaptcha() {
+            let captchaResponse = grecaptcha.getResponse(registerWidgetId);
+            if (captchaResponse.length === 0) {
+                alert("Please complete the CAPTCHA before proceeding.");
+                return false;
+            }
+            return true;
+        }
+
+        // LOGIN EVENT LISTENER
+        document.getElementById("login-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            // Ensure CAPTCHA is validated before proceeding
+            let captchaResponse = grecaptcha.getResponse(loginWidgetId);
+            if (captchaResponse.length === 0) {
+                alert("Please complete the CAPTCHA before proceeding.");
+                return; // Stop if CAPTCHA is not completed
+            }
+
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                alert("Login failed: " + error.message);
+            } else {
+                alert("Login successful! Redirecting...");
+                window.location.href = "dashboard.html"; // Redirect to dashboard
+            }
+        });
+
+        // REGISTER EVENT LISTENER
+        document.getElementById("register-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            // Ensure CAPTCHA is validated before proceeding
+            if (!validateCaptcha()) return; // Stop if CAPTCHA is not completed
+
+            const email = document.getElementById("register-email").value;
+            const password = document.getElementById("register-password").value;
+
+            const { data, error } = await supabase.auth.signUp({ email, password });
+
+            if (error) {
+                alert("Registration failed: " + error.message);
+            } else {
+                alert("Registration successful! Please check your email to confirm your account.");
+                document.getElementById("register-container").style.display = "none";
+                document.getElementById("login-container").style.display = "block";
+            }
+        });
+
+        // LOGOUT FUNCTION
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = "index.html"; // Redirect to login page
+        }
+
+        // If on dashboard, check for logout button and attach event
+        if (window.location.pathname.includes("dashboard.html")) {
+            document.getElementById("logout-button").addEventListener("click", logout);
+        }
+
+        // Check if the user is logged in
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user && window.location.pathname.includes("dashboard.html")) {
+                window.location.href = "index.html"; // Redirect to login if not authenticated
+            }
+        }
+        checkUser();
+    </script>
 </body>
 </html>
